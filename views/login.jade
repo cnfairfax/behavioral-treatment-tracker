@@ -3,7 +3,7 @@ extends layout
 block content
     .main-container
         .login-container
-            h1 = title
+            h1= title
             form(method="POST" action="/login")
                 .field-group
                     label(for="email") Email Address:
