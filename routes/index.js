@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var loggedIn = () => { return false };
 
 /* GET */
 router.get('/', function(req, res, next) {
