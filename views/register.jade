@@ -3,7 +3,7 @@ extends layout
 block content
     .main-container
         .login-container
-            h1 = "Login"
+            h1 = title
             form(method="POST" action="/register")
                 .field-group
                     label(for="name") Full Name:
