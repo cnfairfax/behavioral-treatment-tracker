@@ -5,6 +5,13 @@ CREATE DATABASE behavior_stats;
 
 CREATE EXTENSION CITEXT;
 
+CREATE TABLE accounts
+(
+    id  TEXT PRIMARY KEY,
+    account_name VARCHAR(255) UNIQUE,
+    parent_user_id TEXT
+);
+
 CREATE TABLE users 
 (
     id TEXT PRIMARY KEY,
@@ -14,7 +21,8 @@ CREATE TABLE users
     passhash VARCHAR(500),
     confirmed BOOLEAN NOT NULL DEFAULT FALSE,
     confirmation_code VARCHAR(255) NOT NULL,
-    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    account_id TEXT
 );
 
 CREATE TABLE user_sessions 
@@ -29,8 +37,9 @@ CREATE TABLE user_sessions
 CREATE TABLE locations
 (
     id TEXT PRIMARY KEY,
-    user_id TEXT,
-    location_name TEXT
+    account_id TEXT,
+    parent_user_id TEXT,
+    location_name VARCHAR(255)
 );
 
 CREATE TABLE observation_settings
@@ -43,58 +52,75 @@ CREATE TABLE observation_settings
 CREATE TABLE patients
 (
     id TEXT PRIMARY KEY,
-    first_name TEXT,
-    last_name TEXT,
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
     location_id TEXT
 );
 
--- STILL NEED TO ADD:
--- account
--- target behaviors
---- name
--- target behaviors to patients
--- behavior logs
---- patient
---- observation setting
---- date
---- score (int)
---- target behavior
--- treatment adjustments
---- patient
---- start date
---- note
---- type (do these need a table? - right now, I don't think so, just include an other option)
+CREATE TABLE target_behaviors
+(
+    id TEXT PRIMARY KEY,
+    behavior_name VARCHAR(255),
+    location_id TEXT,
+    UNIQUE(behavior_name, location_id)
+);
 
-CREATE TABLE groups2users
+CREATE TABLE target_behaviors_2_patients
 (
     id SERIAL PRIMARY KEY,
-    user_id TEXT,
-    group_id TEXT,
-    owning_user BOOLEAN DEFAULT FALSE
+    patient_id TEXT,
+    behavior_id TEXT
+);
+
+CREATE TABLE behavior_logs
+(
+    id TEXT PRIMARY KEY,
+    patient_id TEXT,
+    observation_setting_id TEXT,
+    score NUMERIC INTEGER CONSTRAINT zero_or_greater CHECK(score >= 0),
+    target_behavior_id TEXT,
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE adjustment_types
+(
+    id SERIAL PRIMARY KEY,
+    type_name VARCHAR(255) UNIQUE
+);
+
+CREATE TABLE treatment_adjustments
+(
+    id TEXT PRIMARY KEY,
+    patient_id TEXT,
+    adjustment_note TEXT,
+    adjustment_type_id TEXT 
 );
 
 alter table user_sessions add FOREIGN KEY (user_id) REFERENCES users(id);
+
 alter table locations add FOREIGN KEY (user_id) REFERENCES users(id);
+
 alter table observation_settings add FOREIGN KEY (location_id) REFERENCES locations(id);
-alter table groups2users add FOREIGN KEY (group_id) REFERENCES groups(id);
 
+alter table treatment_adjustments add FOREIGN KEY (adjustment_type_id) REFERENCES adjustment_types(id);
+alter table treatment_adjustments add FOREIGN KEY (patient_id) REFERENCES patients(id);
 
-CREATE FUNCTION update_last_updated() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-  BEGIN
-    NEW.last_updated = CURRENT_TIMESTAMP;
-    RETURN NEW;
-  END;
-$$;
+alter table behavior_logs add FOREIGN KEY (patient_id) REFERENCES patients(id);
+alter table behavior_logs add FOREIGN KEY (observation_setting_id) REFERENCES observation_settings(id);
+alter table behavior_logs add FOREIGN KEY (target_behavior_id) REFERENCES target_behaviors(id);
 
-CREATE FUNCTION update_group_next_check_in() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-  BEGIN
-    NEW.next_check_in = CURRENT_DATE + check_in_frequency_days;
-    RETURN NEW;
-  END;
-$$;
+alter table target_behaviors_2_patients add FOREIGN KEY (patient_id) REFERENCES patients(id);
+alter table target_behaviors_2_patients add FOREIGN KEY (target_behavior_id) REFERENCES target_behaviors(id);
 
-CREATE TRIGGER entries_last_updated_update BEFORE UPDATE ON entries FOR EACH ROW EXECUTE PROCEDURE update_last_updated();
+alter table target_behaviors add FOREIGN KEY (location_id) REFERENCES locations(id);
+
+alter table patients add FOREIGN KEY (location_id) REFERENCES locations(id);
+
+alter table observation_settings add FOREIGN KEY (location_id) REFERENCES locations(id);
+
+alter table locations add FOREIGN KEY (parent_user_id) REFERENCES users(id);
+alter table locations add FOREIGN KEY (account_id) REFERENCES accounts(id);
+
+alter table users add FOREIGN KEY (account_id) REFERENCES accounts(id);
+
+alter table accounts add FOREIGN KEY (parent_user_id) REFERENCES users(id);
