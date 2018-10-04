@@ -2,6 +2,7 @@ import db from '../../db';
 import to from '../../helpers/to';
 import JWTSession from '../../helpers/JWTSession';
 import { compare } from '../../encryption/pw';
+import User from '../../models/User';
 
 const login = async (req, res, next) => {
 
@@ -11,7 +12,7 @@ const login = async (req, res, next) => {
       if(password && requested_email) {
   
         // pull user information for validation and jwt
-        const [fetchUserErr, user] = await to(db.one('select email, passhash, id, confirmed from users where email = $1', requested_email));
+        const [fetchUserErr, user] = await to(User({ query: true, queryType: 'email', email: requested_email }));
         if(!user) throw new Error(fetchUserErr);
   
         let { email, passhash, id, confirmed } = user;

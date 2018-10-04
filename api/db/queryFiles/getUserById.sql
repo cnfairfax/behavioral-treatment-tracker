@@ -1,0 +1,1 @@
+SELECT id, email, firstName, lastName, confirmed FROM users WHERE id = ${id};

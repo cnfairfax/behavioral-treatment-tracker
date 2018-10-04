@@ -1,0 +1,1 @@
+UPDATE users SET confirmed = true WHERE id = ${id}

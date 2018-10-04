@@ -1,0 +1,1 @@
+SELECT id, confirmed, confirmation_code FROM users WHERE id = ${id};

@@ -4,7 +4,7 @@ import db from '../db';
 import to from '../helpers/to';
 import randomURIComponent from '../helpers/randomURIComponent';
 import { encrypt } from '../encryption/pw';
-import { createFullUser, isFullUser } from '../db/queryFiles/sql';
+import { createFullUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } from '../db/queryFiles/sql';
 
 const User = async (arg) => {
     if(!arg) throw new Error('No user data');
@@ -14,15 +14,18 @@ const User = async (arg) => {
     // if passed argument is a query object, fetch user from database by either email or id
     if(arg.query) {
         if(arg.queryType === 'id') {
-            const [fetchErr, returnedUser] = await to(db.one('SELECT id, email, firstName, lastName, full_user, confirmed, confirmation_code FROM users WHERE id = $1', arg.query));
-            if(!returnedUser) throw new Error(fetchErr);
-            if(!returnedUser.full_user) throw new Error('Not a user');
+            if(arg.query === 'confirmation code') {
+                const [fetchErr, returnedUser] = await to(db.one(getUserConfirmationById, arg));
+                if(!returnedUser) throw new Error(fetchErr);
+            } else {
+                const [fetchErr, returnedUser] = await to(db.one(getUserById, arg));
+                if(!returnedUser) throw new Error(fetchErr);
+            }
 
             newUser = returnedUser;
         } else if(arg.queryType === 'email') {
-            const [fetchErr, returnedUser] = await to(db.one('SELECT id, email, firstName, lastName, full_user, confirmed, confirmation_code FROM users WHERE email = $1', arg.query));
+            const [fetchErr, returnedUser] = await to(db.one(getUserByEmail, arg));
             if(!returnedUser) throw new Error(fetchErr);
-            if(!returnedUser.full_user) throw new Error('Not a user');
 
             newUser = returnedUser;
         } else {
@@ -65,7 +68,7 @@ const User = async (arg) => {
         if(!newUser.hasOwnProperty('full_user')) newUser.full_user = true;
         if(!newUser.firstName || !newUser.lastName) throw new Error('Must provide first and last names');
         if(!newUser.email) throw new Error('Must provide email address');
-        if(!newUser.passhash) throw new Error('No hashed password available');
+        if(!newUser.passhash) throw new Error('New users must have a password');
         if(newUser.id && newUser.email && newUser.lastName && newUser.firstName && newUser.confirmation_code && newUser.hasOwnProperty('confirmed') && newUser.hasOwnProperty('full_user')) {
             const [ fullUserErr, fullUser ] = await to(db.one(isFullUser, newUser));
             if(!fullUser) {
@@ -84,9 +87,16 @@ const User = async (arg) => {
         throw new Error('Insert failed');
     }
 
-newUser.GetPasshash = async () => {
+    newUser.Confirm = async ( idObj ) => {
+        let [confirmErr, blank] = await to(db.none(confirmUser, idObj));
+        if(confirmErr) throw new Error(confirmErr);
+
+        return newUser;
+    }
+
+    newUser.GetPasshash = async () => {
     
-}
+    }
 
     return newUser
 }

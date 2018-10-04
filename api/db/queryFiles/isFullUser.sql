@@ -1,1 +1,0 @@
-SELECT id, email, firstName, lastName FROM users WHERE email = ${email} AND full_user IS TRUE;

@@ -77,7 +77,7 @@ CREATE TABLE behavior_logs
     id TEXT PRIMARY KEY,
     patient_id TEXT,
     observation_setting_id TEXT,
-    score NUMERIC INTEGER CONSTRAINT zero_or_greater CHECK(score >= 0),
+    score INTEGER CONSTRAINT zero_or_greater CHECK(score >= 0),
     target_behavior_id TEXT,
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -93,12 +93,10 @@ CREATE TABLE treatment_adjustments
     id TEXT PRIMARY KEY,
     patient_id TEXT,
     adjustment_note TEXT,
-    adjustment_type_id TEXT 
+    adjustment_type_id INTEGER 
 );
 
 alter table user_sessions add FOREIGN KEY (user_id) REFERENCES users(id);
-
-alter table locations add FOREIGN KEY (user_id) REFERENCES users(id);
 
 alter table observation_settings add FOREIGN KEY (location_id) REFERENCES locations(id);
 
@@ -110,7 +108,7 @@ alter table behavior_logs add FOREIGN KEY (observation_setting_id) REFERENCES ob
 alter table behavior_logs add FOREIGN KEY (target_behavior_id) REFERENCES target_behaviors(id);
 
 alter table target_behaviors_2_patients add FOREIGN KEY (patient_id) REFERENCES patients(id);
-alter table target_behaviors_2_patients add FOREIGN KEY (target_behavior_id) REFERENCES target_behaviors(id);
+alter table target_behaviors_2_patients add FOREIGN KEY (behavior_id) REFERENCES target_behaviors(id);
 
 alter table target_behaviors add FOREIGN KEY (location_id) REFERENCES locations(id);
 

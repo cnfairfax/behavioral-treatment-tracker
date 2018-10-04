@@ -1,4 +1,3 @@
-import db from '../../db';
 import to from '../../helpers/to';
 
 import User from '../../models/User';
@@ -8,16 +7,19 @@ const confirm = async (req, res, next) => {
     try {
       const { user_id, confirmation_code_param } = req.params;
   
-      let [ fetchUserErr, { id, confirmation_code } ] = await to(User({
+      let [ fetchUserErr, user ] = await to(User({
+        query: 'confirmation code',
         queryType: 'id',
-        query: user_id    
+        id: user_id    
       }));
+      let { id, confirmation_code } = user;
       if(!(id && confirmation_code)) throw new Error(fetchUserErr);
   
       if(id === user_id && confirmation_code === confirmation_code_param) {
-        await db.none('update users set confirmed = true where id = $1', id)
+        let [confirmationErr, user] = await to(user.confirm({id}));
+        if(confirmationErr) throw new Error(confirmationErr);
       } else {
-        throw new Error('Confirmation code does not match')
+        throw new Error('Confirmation code does not match');
       }
   
       res.status(200)
