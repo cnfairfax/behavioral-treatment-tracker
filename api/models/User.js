@@ -4,7 +4,7 @@ import db from '../db';
 import to from '../helpers/to';
 import randomURIComponent from '../helpers/randomURIComponent';
 import { encrypt } from '../encryption/pw';
-import { createFullUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } from '../db/queryFiles/sql';
+import { createUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } from '../db/queryFiles/sql';
 
 const User = async (arg) => {
     if(!arg) throw new Error('No user data');
@@ -58,30 +58,26 @@ const User = async (arg) => {
     Note: 'Get' is implemented by passing a query object to the User factory */
     newUser.Insert = async () => {
         if(!newUser.id) newUser.id = shortid.generate();
+        
         if(!newUser.confirmation_code) {
             const [componentErr, confirmation_code] = await to(randomURIComponent(64));
             if(!confirmation_code) throw new Error(componentErr);
 
             newUser.confirmation_code = confirmation_code
         }
+
         if(!newUser.hasOwnProperty('confirmed')) newUser.confirmed = false;
-        if(!newUser.hasOwnProperty('full_user')) newUser.full_user = true;
         if(!newUser.firstName || !newUser.lastName) throw new Error('Must provide first and last names');
         if(!newUser.email) throw new Error('Must provide email address');
-        if(!newUser.passhash) throw new Error('New users must have a password');
-        if(newUser.id && newUser.email && newUser.lastName && newUser.firstName && newUser.confirmation_code && newUser.hasOwnProperty('confirmed') && newUser.hasOwnProperty('full_user')) {
-            const [ fullUserErr, fullUser ] = await to(db.one(isFullUser, newUser));
-            if(!fullUser) {
-                const [writeErr, createdUser] = await to(db.one(createFullUser, newUser));
-                if(!createdUser) throw new Error(writeErr)
+        if(!newUser.passhash) throw new Error('Must provide a password');
 
-                newUser.id = createdUser.id;
+        if(newUser.id && newUser.email && newUser.lastName && newUser.firstName && newUser.confirmation_code && newUser.hasOwnProperty('confirmed')) {
+            const [writeErr, createdUser] = await to(db.one(createUser, newUser));
+            if(!createdUser) throw new Error(writeErr)
 
-                return newUser
-            }
-            else {
-                throw new Error('User already exists');
-            }
+            newUser.id = createdUser.id;
+
+            return newUser
         }
 
         throw new Error('Insert failed');
