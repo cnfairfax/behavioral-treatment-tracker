@@ -17,6 +17,7 @@ const login = async (req, res, next) => {
   
         let { email, passhash, id, confirmed } = user;
         if(!confirmed) throw new Error('Email address not verified');
+        console.log(passhash)
     
         const [pwErr, secret] = await to(compare(password, passhash));
         if(!secret) throw new Error(pwErr)

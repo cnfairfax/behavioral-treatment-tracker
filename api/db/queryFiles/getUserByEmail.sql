@@ -1,1 +1,3 @@
-SELECT id, email, firstName, lastName, confirmed FROM users WHERE email = ${email};
+SELECT id, email, firstName, lastName, confirmed, passhash
+FROM users
+WHERE email = ${email};

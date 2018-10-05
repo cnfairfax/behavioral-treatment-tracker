@@ -1,3 +1,3 @@
-INSERT INTO accounts(id, account_name, parent_user_id)
-VALUES(${id}, ${account_name}, ${parent_user_id})
+INSERT INTO accounts(id, account_name)
+VALUES(${id}, ${account_name})
 RETURNING id, account_name

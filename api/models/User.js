@@ -4,25 +4,33 @@ import db from '../db';
 import to from '../helpers/to';
 import randomURIComponent from '../helpers/randomURIComponent';
 import { encrypt } from '../encryption/pw';
-import { createUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } from '../db/queryFiles/sql';
+import queries from '../db/queryFiles/sql';
 
 const User = async (arg) => {
+
+    let { createUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } = queries;
+
     if(!arg) throw new Error('No user data');
 
     let newUser = {};
 
     // if passed argument is a query object, fetch user from database by either email or id
     if(arg.query) {
+        let fetchedUser;
+
         if(arg.queryType === 'id') {
             if(arg.query === 'confirmation code') {
                 const [fetchErr, returnedUser] = await to(db.one(getUserConfirmationById, arg));
                 if(!returnedUser) throw new Error(fetchErr);
+                fetchedUser = returnedUser;
             } else {
                 const [fetchErr, returnedUser] = await to(db.one(getUserById, arg));
                 if(!returnedUser) throw new Error(fetchErr);
+                fetchedUser = returnedUser;
             }
 
-            newUser = returnedUser;
+
+            newUser = fetchedUser;
         } else if(arg.queryType === 'email') {
             const [fetchErr, returnedUser] = await to(db.one(getUserByEmail, arg));
             if(!returnedUser) throw new Error(fetchErr);
@@ -56,9 +64,9 @@ const User = async (arg) => {
         GetPasshash
 
     Note: 'Get' is implemented by passing a query object to the User factory */
-    newUser.Insert = async () => {
+    newUser.Insert = async (account) => {
         if(!newUser.id) newUser.id = shortid.generate();
-        
+        if(!newUser.account_id) newUser.account_id = account.id;
         if(!newUser.confirmation_code) {
             const [componentErr, confirmation_code] = await to(randomURIComponent(64));
             if(!confirmation_code) throw new Error(componentErr);
@@ -80,11 +88,12 @@ const User = async (arg) => {
             return newUser
         }
 
-        throw new Error('Insert failed');
+        throw new Error('User insert failed');
+
     }
 
-    newUser.Confirm = async ( idObj ) => {
-        let [confirmErr, blank] = await to(db.none(confirmUser, idObj));
+    newUser.Confirm = async () => {
+        let [confirmErr, blank] = await to(db.none(confirmUser, newUser));
         if(confirmErr) throw new Error(confirmErr);
 
         return newUser;
