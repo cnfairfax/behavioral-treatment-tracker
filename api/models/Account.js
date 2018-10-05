@@ -46,7 +46,7 @@ const Account = async (arg) => {
         if(!account.account_name) throw new Error('Must provide account name');
 
         if(account.id && account.account_name) {
-            console.log(account)
+            
             const [writeErr, createdAccount] = await to(db.one(createAccount, account));
             if(!createdAccount) throw new Error(writeErr)
 
@@ -56,7 +56,7 @@ const Account = async (arg) => {
         }
          
         throw new Error('Account insert failed');
-        
+
     }
 
     account.UpdateParentUser = async (user) => {

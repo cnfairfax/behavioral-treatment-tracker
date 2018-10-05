@@ -13,7 +13,7 @@ const confirm = async (req, res, next) => {
         id: user_id    
       }));
       let { id, confirmation_code } = user;
-      console.log(user)
+
       if(!(id && confirmation_code)) throw new Error("Error fetching user: " + fetchUserErr);
   
       if(id === user_id && confirmation_code === confirmation_code_param) {

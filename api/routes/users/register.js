@@ -16,7 +16,6 @@ const register = async (req, res, next) => {
       const [accountInitErr, account] = await to(Account(req.body));
       if(!account) throw new Error(accountInitErr);
 
-      console.log(account);
       // Insert the account to the db - no parent user, yet
       const [accountWriteErr, createdAccount] = await to(account.Insert());
       if(!createdAccount) throw new Error(accountWriteErr);
@@ -24,7 +23,7 @@ const register = async (req, res, next) => {
       // re-init account w/ retruned account from db
       const [newAccountInitErr, newAccount] = await to(Account(createdAccount));
       if(!newAccount) throw new Error(newAccountInitErr);
-      
+
       // Insert the new user to the db
       const [userWriteErr, createdUser] = await to(user.Insert(newAccount.id));
       if(!createdUser) throw new Error(userWriteErr);
