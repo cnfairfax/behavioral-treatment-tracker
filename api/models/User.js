@@ -4,11 +4,11 @@ import db from '../db';
 import to from '../helpers/to';
 import randomURIComponent from '../helpers/randomURIComponent';
 import { encrypt } from '../encryption/pw';
-import queries from '../db/queryFiles/sql';
+import queries from '../db/queryFiles/Users';
+
+let { createUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } = queries;
 
 const User = async (arg) => {
-
-    let { createUser, getUserByEmail, getUserById, getUserConfirmationById, confirmUser } = queries;
 
     if(!arg) throw new Error('No user data');
 
