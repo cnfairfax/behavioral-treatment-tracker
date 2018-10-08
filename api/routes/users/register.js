@@ -24,9 +24,11 @@ const register = async (req, res, next) => {
       const [newAccountInitErr, newAccount] = await to(Account(createdAccount));
       if(!newAccount) throw new Error(newAccountInitErr);
 
+      console.log(newAccount.id);
+
       // Insert the new user to the db
-      const [userWriteErr, createdUser] = await to(user.Insert(newAccount.id));
-      if(!createdUser) throw new Error(userWriteErr);
+      const [userWriteErr, createdUser] = await to(user.Insert(newAccount));
+      if(userWriteErr) throw new Error(userWriteErr);
 
       // Update account with the parent_user_id
       const [accountUpdateErr, returnedAccount] = await to(newAccount.UpdateParentUser(createdUser));

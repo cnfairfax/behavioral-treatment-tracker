@@ -39,7 +39,8 @@ CREATE TABLE locations
     id TEXT PRIMARY KEY,
     account_id TEXT,
     parent_user_id TEXT,
-    location_name VARCHAR(255)
+    location_name VARCHAR(255),
+    UNIQUE (account_id, location_name)
 );
 
 CREATE TABLE observation_settings

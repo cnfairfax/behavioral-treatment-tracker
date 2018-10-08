@@ -15,7 +15,7 @@ const login = async (req, res, next) => {
         const [fetchUserErr, user] = await to(User({ query: true, queryType: 'email', email: requested_email }));
         if(!user) throw new Error(fetchUserErr);
   
-        let { email, passhash, id, confirmed } = user;
+        let { email, passhash, id, confirmed, account_id } = user;
         if(!confirmed) throw new Error('Email address not verified');
     
         const [pwErr, secret] = await to(compare(password, passhash));
@@ -49,6 +49,7 @@ const login = async (req, res, next) => {
         res.status(200)
           .cookie('bsSes', token, cookie_settings)
           .cookie('bsid', id, cookie_settings)
+          .cookie('actid', account_id, cookie_settings)
           .json({
             status: 'success',
             message: 'Logged in!'
@@ -78,6 +79,7 @@ const logout = async (req, res, next) => {
     res.status(200)
       .clearCookie('bsSes')
       .clearCookie('bsid')
+      .clearCookie('actid')
       .json({
         status: 'success',
         message: 'logged out!'

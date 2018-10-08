@@ -60,9 +60,9 @@ const Account = async (arg) => {
     }
 
     account.UpdateParentUser = async (user) => {
-        if(parent_user_id) account.parent_user_id = user.id;
+        account.parent_user_id = user.id;
 
-        const [writeErr, updatedAccount] = await to(db.one(updateAccountParentUser, account));
+        const [writeErr, updatedAccount] = await to(db.none(updateAccountParentUser, account));
         if(!updatedAccount) throw new Error(writeErr);
 
         account.parent_user_id = updatedAccount.parent_user_id

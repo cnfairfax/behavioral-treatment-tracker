@@ -26,7 +26,6 @@ const loadQueries = (dir) => {
             if(item.substring(item.length-4, item.length) === ".sql") {
                 var itemName = item.substring(0, item.length-4);
                 queryObj[itemName] = sql(item, dir);
-                console.log(queryObj[itemName]);
             }
         }
 
