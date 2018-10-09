@@ -16,8 +16,6 @@ const createLocation = async (req, res, next) => {
         let [insertErr, createdLocation] = await to(location.Insert());
         if(!createdLocation) throw new Error(insertErr);
 
-        console.log(createdLocation);
-
         res.status(200)
             .json({
                 status: 'success',
