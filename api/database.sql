@@ -50,7 +50,7 @@ CREATE TABLE observation_settings
     location_id TEXT
 );
 
-CREATE TABLE patients
+CREATE TABLE patients --CHANGE THIS AFTER CONSULTING W/ DOMAIN EXPERT
 (
     id TEXT PRIMARY KEY,
     first_name VARCHAR(255),
@@ -62,8 +62,8 @@ CREATE TABLE target_behaviors
 (
     id TEXT PRIMARY KEY,
     behavior_name VARCHAR(255),
-    location_id TEXT,
-    UNIQUE(behavior_name, location_id)
+    account_id TEXT,
+    UNIQUE(behavior_name, account_id)
 );
 
 CREATE TABLE target_behaviors_2_patients
@@ -86,7 +86,8 @@ CREATE TABLE behavior_logs
 CREATE TABLE adjustment_types
 (
     id SERIAL PRIMARY KEY,
-    type_name VARCHAR(255) UNIQUE
+    type_name VARCHAR(255) UNIQUE,
+    account_id TEXT
 );
 
 CREATE TABLE treatment_adjustments
@@ -94,7 +95,8 @@ CREATE TABLE treatment_adjustments
     id TEXT PRIMARY KEY,
     patient_id TEXT,
     adjustment_note TEXT,
-    adjustment_type_id INTEGER 
+    adjustment_type_id INTEGER,
+    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 alter table user_sessions add FOREIGN KEY (user_id) REFERENCES users(id);
@@ -111,11 +113,13 @@ alter table behavior_logs add FOREIGN KEY (target_behavior_id) REFERENCES target
 alter table target_behaviors_2_patients add FOREIGN KEY (patient_id) REFERENCES patients(id);
 alter table target_behaviors_2_patients add FOREIGN KEY (behavior_id) REFERENCES target_behaviors(id);
 
-alter table target_behaviors add FOREIGN KEY (location_id) REFERENCES locations(id);
+alter table target_behaviors add FOREIGN KEY (account_id) REFERENCES accounts(id);
 
 alter table patients add FOREIGN KEY (location_id) REFERENCES locations(id);
 
 alter table observation_settings add FOREIGN KEY (location_id) REFERENCES locations(id);
+
+alter table adjustment_types add FOREIGN KEY (account_id) REFERENCES accounts(id);
 
 alter table locations add FOREIGN KEY (parent_user_id) REFERENCES users(id);
 alter table locations add FOREIGN KEY (account_id) REFERENCES accounts(id);
